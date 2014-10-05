@@ -18,7 +18,6 @@ public abstract class EndObserver<T> implements Observer<T> {
     }
 
 
-
     @Override
     public void onNext(final T t) {
 

@@ -1,40 +1,29 @@
 package it.federico.com.retrofitrx.fragment;
 
 
-
-import android.app.ListFragment;
-import android.os.Bundle;
 import android.app.Fragment;
-import android.util.Log;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.AdapterView;
-import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import it.federico.com.retrofitrx.Model.Repository;
 import it.federico.com.retrofitrx.R;
 import it.federico.com.retrofitrx.adapter.CustomAdapter;
 import it.federico.com.retrofitrx.application.CustomApplication;
-import it.federico.com.retrofitrx.network.controller.RepositoriesController;
 import it.federico.com.retrofitrx.network.observer.EndObserver;
 import it.federico.com.retrofitrx.utils.ViewUtils;
 import rx.Observable;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainFragment extends Fragment {
 
@@ -58,8 +47,7 @@ public class MainFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = createView(inflater, container, savedInstanceState);
         buildViews();
         return root;
@@ -82,13 +70,13 @@ public class MainFragment extends Fragment {
         // Start loading
         ViewUtils.setViewVisible(progressBar);
         ViewUtils.setViewGone(listView);
-        Observable<Repository[]> observable = CustomApplication.getInstance().getGithubApi().getListOfRepositories
-                ("octokit");
+        Observable<Repository[]> observable = CustomApplication.getInstance().getGithubApi()
+                .getListOfRepositories("octokit");
         // let's bind the observable to the fragment so It follows the Fragment lifecycle
         AndroidObservable.bindFragment(MainFragment.this, observable);
         // do we want to cache the response so if anyone else subscribe again to observable after it's finished will
         // receive the same result?
-//        observable.cache()
+        //        observable.cache()
         // subscribe the observable in a scheduler
         observable.subscribeOn(Schedulers.io());
         // observe in the mainThread
