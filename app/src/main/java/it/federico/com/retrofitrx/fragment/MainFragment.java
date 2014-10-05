@@ -22,7 +22,13 @@ import it.federico.com.retrofitrx.R;
 import it.federico.com.retrofitrx.adapter.CustomAdapter;
 import it.federico.com.retrofitrx.application.CustomApplication;
 import it.federico.com.retrofitrx.network.controller.RepositoriesController;
+import it.federico.com.retrofitrx.network.observer.EndObserver;
 import it.federico.com.retrofitrx.utils.ViewUtils;
+import rx.Observable;
+import rx.android.observables.AndroidObservable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,27 +82,38 @@ public class MainFragment extends Fragment {
         // Start loading
         ViewUtils.setViewVisible(progressBar);
         ViewUtils.setViewGone(listView);
-        CustomApplication.getInstance().getGithubApi().getListOfRepositories(new RepositoriesController() {
+        Observable<Repository[]> observable = CustomApplication.getInstance().getGithubApi().getListOfRepositories
+                ("octokit");
+        // let's bind the observable to the fragment so It follows the Fragment lifecycle
+        AndroidObservable.bindFragment(MainFragment.this, observable);
+        // do we want to cache the response so if anyone else subscribe again to observable after it's finished will
+        // receive the same result?
+//        observable.cache()
+        // subscribe the observable in a scheduler
+        observable.subscribeOn(Schedulers.io());
+        // observe in the mainThread
+        observable.observeOn(AndroidSchedulers.mainThread());
+        // subscribe the observable,
+        observable.subscribe(new EndObserver<Repository[]>() {
             @Override
-            public void onEnd() {
-                Log.d(TAG, "onEnd Called");
-                ViewUtils.setViewGone(progressBar);
-                ViewUtils.setViewVisible(listView);
+            public void onCompleted() {
+                super.onCompleted();
+                // do whatever you want in the onComplete, keep in mind that if an error occurs this is never called
             }
 
             @Override
-            public void onGetRepositoriesError(final Throwable throwable) {
-                Log.d(TAG, "onGetRepositoriesError Called");
-                Toast.makeText(getActivity(), "Error", Toast.LENGTH_LONG).show();
-                Log.e(TAG, throwable.getMessage());
-            }
-
-            @Override
-            public void onGetRepositories(final Repository[] repositories) {
-                Log.d(TAG, "onGetRepositories Called");
+            public void onNext(final Repository[] repositories) {
+                super.onNext(repositories);
+                // item emitted, use it
                 refreshListView(repositories);
             }
-        }, "octokit");
+
+            @Override
+            public void onError(final Throwable throwable) {
+                super.onError(throwable);
+                // an error occured during the operation, implements your logic here!
+            }
+        });
     }
 
     private void refreshListView(Repository[] repositories) {

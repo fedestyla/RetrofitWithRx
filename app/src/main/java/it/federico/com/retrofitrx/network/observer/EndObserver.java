@@ -23,8 +23,4 @@ public abstract class EndObserver<T> implements Observer<T> {
     public void onNext(final T t) {
 
     }
-
-
-
-
 }
