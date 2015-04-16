@@ -73,16 +73,16 @@ public class MainFragment extends Fragment {
         Observable<Repository[]> observable = CustomApplication.getInstance().getGithubApi()
                 .getListOfRepositories("octokit");
         // let's bind the observable to the fragment so It follows the Fragment lifecycle
-        AndroidObservable.bindFragment(MainFragment.this, observable);
+        AndroidObservable.bindFragment(MainFragment.this, observable).
         // do we want to cache the response so if anyone else subscribe again to observable after it's finished will
         // receive the same result?
         //        observable.cache()
         // subscribe the observable in a scheduler
-        observable.subscribeOn(Schedulers.io());
+        subscribeOn(Schedulers.io()).
         // observe in the mainThread
-        observable.observeOn(AndroidSchedulers.mainThread());
+        observeOn(AndroidSchedulers.mainThread()).
         // subscribe the observable,
-        observable.subscribe(new EndObserver<Repository[]>() {
+        subscribe(new EndObserver<Repository[]>() {
             @Override
             public void onCompleted() {
                 super.onCompleted();
